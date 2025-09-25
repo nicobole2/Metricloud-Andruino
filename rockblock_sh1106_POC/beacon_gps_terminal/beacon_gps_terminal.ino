@@ -36,23 +36,46 @@
 void setup() {
     setupHardware();
     startupLEDPattern();
+    setMaxIridiumMessages(3);   // 0 = Solo emergencia, sin beacons automáticos
+    setBeaconInterval(30);      // Intervalo para revisión de buzón (solo se usa cuando MAX = 0)
 }
 
 void loop() {
   unsigned long currentMillis = millis();
   
+  // Comandos serie para debug
+  if (Serial.available()) {
+    char cmd = Serial.read();
+    if (cmd == 'T' || cmd == 't') {
+      Serial.println(F("Simulando interrupción por comando serie..."));
+      simulateInterrupt();
+    } else if (cmd == 'S' || cmd == 's') {
+      testInterruptPin();
+    } else if (cmd == 'D' || cmd == 'd') {
+      debugInterruptStatus();
+    }
+  }
+  
   handleGPS();
   handleTemperatures(currentMillis);
   handleButtons(currentMillis);
+  handleInterruptButton();  // Agregar manejo explícito de interrupción
+  checkTransmissionTimeout();  // Verificar timeout de transmisión
   updateDisplay(currentMillis);
   blinkStatusLED();
   
-  if (currentMillis - lastTransmissionTime >= BEACON_INTERVAL * 1000UL) {
+  // Solo ejecutar beacons automáticos si MAX_IRIDIUM_MSG_SENT > 0
+  if (MAX_IRIDIUM_MSG_SENT > 0 && currentMillis - lastTransmissionTime >= BEACON_INTERVAL * 1000UL) {
     if (iridium_msg_sent_count < MAX_IRIDIUM_MSG_SENT) {
       attemptTransmission();
     } else {
       checkIncomingMessages();
     }
+  }
+  
+  // Si MAX_IRIDIUM_MSG_SENT = 0, solo revisar mensajes ocasionalmente (sin enviar beacons)
+  if (MAX_IRIDIUM_MSG_SENT == 0 && currentMillis - lastTransmissionTime >= BEACON_INTERVAL * 1000UL * 10) {
+    checkIncomingMessages();
   }
   updateStatusReport(currentMillis);
 }
