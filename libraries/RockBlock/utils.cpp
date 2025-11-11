@@ -21,14 +21,25 @@ void printAddress(uint8_t address[]) {
 void updateStatusReport(unsigned long currentMillis) {
   if (currentMillis - lastStatusUpdateTime >= STATUS_UPDATE_INTERVAL) {
     lastStatusUpdateTime = currentMillis;
-    long remainingSeconds = (lastTransmissionTime + (BEACON_INTERVAL * 1000UL) - currentMillis) / 1000;
-    if (remainingSeconds < 0) remainingSeconds = 0;
-    if (iridium_msg_sent_count < MAX_IRIDIUM_MSG_SENT) {
-      Serial.print(F("[ESTADO] Próximo beacon en aprox: "));
-    } else {
+    
+    if (MAX_IRIDIUM_MSG_SENT == 0) {
+      // Modo solo manual
+      Serial.println(F("[ESTADO] Modo SOLO MANUAL - beacons automáticos deshabilitados"));
+      long remainingSeconds = (lastTransmissionTime + (BEACON_INTERVAL * 1000UL * 10) - currentMillis) / 1000;
+      if (remainingSeconds < 0) remainingSeconds = 0;
       Serial.print(F("[ESTADO] Próxima revisión de buzón en aprox: "));
+      Serial.print(remainingSeconds); Serial.println(F(" segundos."));
+    } else {
+      // Modo normal con beacons
+      long remainingSeconds = (lastTransmissionTime + (BEACON_INTERVAL * 1000UL) - currentMillis) / 1000;
+      if (remainingSeconds < 0) remainingSeconds = 0;
+      if (iridium_msg_sent_count < MAX_IRIDIUM_MSG_SENT) {
+        Serial.print(F("[ESTADO] Próximo beacon en aprox: "));
+      } else {
+        Serial.print(F("[ESTADO] Próxima revisión de buzón en aprox: "));
+      }
+      Serial.print(remainingSeconds); Serial.println(F(" segundos."));
     }
-    Serial.print(remainingSeconds); Serial.println(F(" segundos."));
   }
 }
 
@@ -37,6 +48,13 @@ bool ISBDCallback() {
   
   // Manejar interrupción del botón 3
   handleInterruptButton();
+  
+  // Verificar si se solicita cancelar la transmisión actual
+  if (cancelCurrentTransmission) {
+    Serial.println(F("DEBUG: Cancelando transmisión por callback"));
+    cancelCurrentTransmission = false;
+    return false;  // Esto cancela la transmisión Iridium
+  }
   
   // Tareas regulares durante transmisión Iridium
   handleTemperatures(currentMillis);

@@ -18,6 +18,7 @@ void setupHardware() {
   initTemperatureSensors();
   initGPS();
   initIridium();
+  setDisplayState(DISPLAY_NORMAL);
 }
 
 void startupLEDPattern() {

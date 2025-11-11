@@ -21,8 +21,8 @@ extern const int INTERRUPT_BUTTON_PIN;
 #define VELOCITY_SCALE_FACTOR 100           // 10^2 para velocidad
 
 // Temporizadores (declaraciones extern)
-extern const unsigned long BEACON_INTERVAL;
-extern const int MAX_IRIDIUM_MSG_SENT;
+extern unsigned long BEACON_INTERVAL;  // Ahora es variable, no const
+extern int MAX_IRIDIUM_MSG_SENT;       // Ahora es variable, no const
 extern const unsigned long STATUS_UPDATE_INTERVAL;
 extern const unsigned long TEMP_INTERVAL;
 extern const unsigned long DEBOUNCE_DELAY;
@@ -30,5 +30,10 @@ extern const unsigned long ENVIADO_DURATION;
 
 // Mensajes predefinidos (declaración extern)
 extern const char* predefinedMessages[];
+extern const char* EMERGENCY_MESSAGE;
+
+// Funciones para configurar parámetros
+void setMaxIridiumMessages(int maxMessages);
+void setBeaconInterval(unsigned long intervalSeconds);
 
 #endif // CONFIG_H

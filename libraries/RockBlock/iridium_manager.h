@@ -23,5 +23,6 @@ void prepareRxBuffer();
 void attemptTransmission();
 void checkIncomingMessages();
 void processReceivedMessage();
+void sendTextMessage(const char* message);
 
 #endif // IRIDIUM_MANAGER_H

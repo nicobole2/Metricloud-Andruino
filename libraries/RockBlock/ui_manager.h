@@ -12,17 +12,35 @@
 // =================================================
 extern Adafruit_SH1106G display;
 
+// Estados del display
+enum DisplayState {
+  DISPLAY_NORMAL,
+  DISPLAY_INITIALIZING,
+  DISPLAY_SENDING,
+  DISPLAY_MESSAGE_SENT,
+  DISPLAY_RECEIVING,
+  DISPLAY_MESSAGE_RECEIVED,
+  DISPLAY_ERROR,
+  DISPLAY_EMERGENCY_SENDING
+};
+
 // Variables de estado
 extern int buttonStates[3], lastButtonStates[3];
 extern unsigned long lastDebounceTime[3];
 extern int selectedMessageIndex;
 extern bool messageSelectedByUser;
-extern bool showEnviado;
-extern unsigned long enviadoTimestamp;
+extern DisplayState currentDisplayState;
+extern unsigned long stateTimestamp;
+extern char statusMessage[64];
 
 // Variables de interrupción
 extern volatile bool interruptButtonPressed;
 extern volatile unsigned long lastInterruptTime;
+
+// Estado global de transmisión
+extern bool isTransmitting;
+extern unsigned long transmissionStartTime;
+extern bool cancelCurrentTransmission;
 
 // Funciones públicas
 void initDisplay();
@@ -34,5 +52,11 @@ void buttonInterruptISR();
 void handleInterruptButton();
 void testInterruptPin();
 void simulateInterrupt();
+void debugInterruptStatus();
+void setDisplayState(DisplayState state, const char* message = "");
+void sendEmergencyBeacon();
+void startTransmission();
+void endTransmission();
+void checkTransmissionTimeout();
 
 #endif // UI_MANAGER_H
